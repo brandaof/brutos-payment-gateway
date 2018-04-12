@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface EntityAccess<T> {
 
-	void save(T user) throws EntityAccessException;
+	void save(T value) throws EntityAccessException;
 	
-	void update(T user) throws EntityAccessException;
+	void update(T value) throws EntityAccessException;
 	
 	void delete(int id) throws EntityAccessException;
 	

@@ -27,6 +27,7 @@ import org.brandao.brutos.paymentgateway.registry.PaymentRegistry;
 import org.brandao.brutos.paymentgateway.registry.PaymentRegistryException;
 import org.brandao.brutos.paymentgateway.web.entity.PaymentMetaValuesDefinition;
 import org.brandao.brutos.web.RequestMethodTypes;
+import org.brandao.brutos.web.WebFlowController;
 
 @Action(value="/payment", view=@View("payment/paymentForm"))
 public class PaymentController {
@@ -63,6 +64,7 @@ public class PaymentController {
 			Payment payment) throws ValidationException, PaymentRegistryException{
 		
 		this.paymentRegistry.registerPayment(payment);
+		WebFlowController.redirectTo("/payment/list");
 	}
 	
 	@Action("/payment/list")
