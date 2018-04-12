@@ -3,7 +3,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	
-	<title>Brutos MVC hibernate</title>
+	<title>Brutos Payment gateway example</title>
 	
 	<link href="${pageContext.request.contextPath}/resources/css/bootstrap/bootstrap.min.css" rel="stylesheet">
 
@@ -11,20 +11,37 @@
 		
 		contextPath = "${pageContext.request.contextPath}";
 
-		function get(resource){
-			location.href = contextPath + resource;
+		function get(resource, dest){
+			if(dest == null){
+				location.href = contextPath + resource;
+			}
+			else{
+				execute("get", resource, dest);
+			}
 		}
 
-		function post(resource, reload){
+		function execute(method, resource, dest){
 			$.ajax({
-			    type: 'POST',
+			    type: method,
 			    url: contextPath + resource,
 			    success: function(data) {
-			    	document.write(data);
-			    	document.close();
+			    	if(dest == null){
+				    	document.write(data);
+				    	document.close();
+			    	}
+			    	else{
+						$("#" + dest).html(data);
+			    	}
 	            }			    
 			});
 		}
+		
+		$(function(){
+			$('#paymentType').change(function(event) {
+				var paymentType = $('#paymentType').val();
+				get('/payment/' + paymentType, "paymentContent");
+		    }); 			
+		});
 		
 	</script>
 	<style>

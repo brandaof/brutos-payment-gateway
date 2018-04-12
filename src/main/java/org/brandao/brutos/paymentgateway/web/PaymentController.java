@@ -1,6 +1,8 @@
 package org.brandao.brutos.paymentgateway.web;
 
+import java.util.Currency;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -18,6 +20,9 @@ import org.brandao.brutos.annotation.web.RequestMethod;
 import org.brandao.brutos.annotation.web.ResponseError;
 import org.brandao.brutos.annotation.web.ResponseErrors;
 import org.brandao.brutos.paymentgateway.entity.Payment;
+import org.brandao.brutos.paymentgateway.entity.PaymentGatewayConfig;
+import org.brandao.brutos.paymentgateway.registry.PaymentGatewayConfigRegistry;
+import org.brandao.brutos.paymentgateway.registry.PaymentGatewayConfigRegistryException;
 import org.brandao.brutos.paymentgateway.registry.PaymentRegistry;
 import org.brandao.brutos.paymentgateway.registry.PaymentRegistryException;
 import org.brandao.brutos.paymentgateway.web.entity.PaymentMetaValuesDefinition;
@@ -29,6 +34,10 @@ public class PaymentController {
 	@Transient
 	@Inject
 	private PaymentRegistry paymentRegistry;
+	
+	@Transient
+	@Inject
+	private PaymentGatewayConfigRegistry paymentGatewayConfigRegistry;
 	
 	@RequestMethod(RequestMethodTypes.POST)
 	@Action("/payment")
@@ -67,7 +76,7 @@ public class PaymentController {
 			@Basic(bean="paymentType")
 			String paymentType){
 		ResultAction result = new ResultActionImp();
-		result.setView("payment/gateway/" + paymentType + "Form");
+		result.setView("payment/gateway/" + paymentType + "/paymentForm");
 		return result;
 	}
 	
@@ -79,9 +88,17 @@ public class PaymentController {
 			Integer id) throws PaymentRegistryException{
 		
 		ResultAction result = new ResultActionImp();
-		result.setView("payment/gateway/" + paymentType);
+		result.setView("payment/gateway/" + paymentType + "/payment");
 		result.add("payment", this.paymentRegistry.findPaymentById(id));
 		return result;
+	}
+
+	public List<PaymentGatewayConfig> getPaymentTypeList() throws PaymentGatewayConfigRegistryException{
+		return this.paymentGatewayConfigRegistry.findAllPaymentConfig(true);
+	}
+	
+	public Set<Currency> getCurrencyList(){
+		return Currency.getAvailableCurrencies();
 	}
 	
 }
