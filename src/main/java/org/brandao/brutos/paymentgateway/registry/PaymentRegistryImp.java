@@ -8,11 +8,8 @@ import javax.inject.Singleton;
 import javax.transaction.Transactional;
 
 import org.brandao.brutos.paymentgateway.entity.Payment;
-import org.brandao.brutos.paymentgateway.entity.PaymentStatus;
-import org.brandao.brutos.paymentgateway.entityaccess.EntityAccessException;
 import org.brandao.brutos.paymentgateway.entityaccess.PaymentEntityAccess;
 import org.brandao.brutos.paymentgateway.payment.PaymentGateway;
-import org.brandao.brutos.paymentgateway.payment.PaymentGatewayException;
 import org.brandao.brutos.paymentgateway.payment.PaymentGatewayProvider;
 
 @Singleton
@@ -27,25 +24,25 @@ public class PaymentRegistryImp
 	
 	@Override
 	@Transactional
-	public void registerPayment(Payment payment)
+	public void registerPaymentRequest(Payment payment)
 			throws PaymentRegistryException {
+		
+		if(payment.getId() > 0){
+			throw new PaymentRegistryException("invalid payment");
+		}
+		
 		try{
-			if(payment.getId() <= 0){
-				PaymentGateway paymentGateway = 
-					this.paymentGatewayProvider.getPaymentGateway(payment.getPaymentType());
-				
-				if(paymentGateway == null){
-					throw new PaymentRegistryException("invalid payment type: " + payment.getPaymentType());
-				}
-				
-				this.registerNewPayment(payment);
-				this.registryPayment(payment, paymentGateway);
-			}
-			else{
-				this.paymentEntityAccess.update(payment);
-				this.paymentEntityAccess.flush();
+			PaymentGateway paymentGateway = 
+				this.paymentGatewayProvider.getPaymentGateway(payment.getPaymentType());
+			
+			if(paymentGateway == null){
+				throw new PaymentRegistryException("invalid payment type: " + payment.getPaymentType());
 			}
 			
+			paymentGateway.payment(payment);
+			payment.setPaymentDate(new Date());
+			this.paymentEntityAccess.save(payment);
+			this.paymentEntityAccess.flush();
 		}
 		catch(PaymentRegistryException e){
 			throw e;
@@ -53,39 +50,55 @@ public class PaymentRegistryImp
 		catch(Throwable e){
 			throw new PaymentRegistryException(e);
 		}
+	}	
+	@Override
+	@Transactional
+	public void registerPayment(Payment payment)
+			throws PaymentRegistryException {
+		try{
+			if(payment.getId() <= 0){
+				this.paymentEntityAccess.save(payment);
+			}
+			else{
+				this.paymentEntityAccess.update(payment);
+			}
+			this.paymentEntityAccess.flush();
+			
+		}
+		catch(Throwable e){
+			throw new PaymentRegistryException(e);
+		}
 	}
 
-	private void registerNewPayment(Payment payment) throws EntityAccessException{
-		payment.setPaymentDate(new Date());
-		payment.setPaymentStatus(PaymentStatus.PENDING_PAYMENT);
-		this.paymentEntityAccess.save(payment);
-		this.paymentEntityAccess.flush();
-	}
-	
-	private void registryPayment(Payment payment, PaymentGateway paymentGateway
-			) throws PaymentGatewayException, EntityAccessException{
-		paymentGateway.payment(payment);
-		payment.setPaymentStatus(PaymentStatus.PAYMENT_RECEIVED);
-		this.paymentEntityAccess.update(payment);
-		this.paymentEntityAccess.flush();
-	}
-	
 	@Override
 	public void removePayment(int id) throws PaymentRegistryException {
-		// TODO Auto-generated method stub
-		
+		try{
+			this.paymentEntityAccess.delete(id);
+			this.paymentEntityAccess.flush();
+		}
+		catch(Throwable e){
+			throw new PaymentRegistryException(e);
+		}
 	}
 
 	@Override
 	public Payment findPaymentById(int id) throws PaymentRegistryException {
-		// TODO Auto-generated method stub
-		return null;
+		try{
+			return this.paymentEntityAccess.findById(id);
+		}
+		catch(Throwable e){
+			throw new PaymentRegistryException(e);
+		}
 	}
 
 	@Override
 	public List<Payment> findAllPayment() throws PaymentRegistryException {
-		// TODO Auto-generated method stub
-		return null;
+		try{
+			return this.paymentEntityAccess.findAll();
+		}
+		catch(Throwable e){
+			throw new PaymentRegistryException(e);
+		}
 	}
 
 }
