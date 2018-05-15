@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
-	<WatchedResource>WEB-INF/web.xml</WatchedResource>
-
 	<Transaction 
 		factory="com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple" />
 
